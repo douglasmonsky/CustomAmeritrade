@@ -17,7 +17,7 @@ class Ameritrade:
     def __init__(self, account):
         '''Takes in Account Object as argument.'''
         self.account = account
-        self.refresh_token =account.refresh_token
+        self.refresh_token = account.refresh_token
         self.account_id = account.account_id
         if account.auth_token:
             self.auth_token = account.auth_token

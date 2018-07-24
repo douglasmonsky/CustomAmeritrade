@@ -23,20 +23,16 @@ class TransactionProcessor:
         transactions = {}
         for transaction in self.ameritrade_json:
             transaction_type = transaction['type']
-            if transaction_type not in transactions:
-                transactions[transaction_type] = {}
             if transaction_type == 'TRADE':
                 transaction_id = transaction['orderId']
             else:
                 transaction_id = transaction['transactionId']
-            if transaction_id not in transactions[transaction_type]:
-                transactions[transaction_type][transaction_id] = []
-            transactions[transaction_type][transaction_id].append(transaction)
+            if transaction_id not in transactions:
+                transactions[transaction_id] = []
+            transactions[transaction_id].append(transaction)
 
-        for transcation_type in transactions['TRADE']:
-            print(transaction_type)
-            for transaction_id, transaction_pieces in transaction_type.items():
-                self.transaction_list.append(Transaction(transaction_id, transaction_pieces))
+        for transaction_id, transaction_pieces in transactions.items():
+            self.transaction_list.append(Transaction(transaction_id, transaction_pieces))
 
 
 class Transaction:
@@ -64,12 +60,12 @@ class Trade(Transaction):
         super().__init__(transaction_pieces)
 
 if __name__ == '__main__':
-    ameritrade = Ameritrade(MainAccount.account_id)
+    ameritrade = Ameritrade(MainAccount)
     transactions_json = ameritrade.get_transactions('2018-01-01', '2018-07-23')
     processer = TransactionProcessor(transactions_json)
     processer.group_transactions()
     for transaction in processer.transaction_list:
-        print(transaction)
+        print(transaction.calculate_net())
     # net_total = 0
     # for transaction_type in processer.transactions:
     #     for trade in processer.transactions[transaction_type].values():
