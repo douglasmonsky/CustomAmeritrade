@@ -14,9 +14,10 @@ class Account:
 
 class Ameritrade:
 
-    def __init__(self, account):
+    def __init__(self, account, client_id=''):
         '''Takes in Account Object as argument.'''
         self.account = account
+        self.client_id = client_id
         self.refresh_token = account.refresh_token
         self.account_id = account.account_id
         if account.auth_token:
@@ -33,7 +34,7 @@ class Ameritrade:
     def get_live_quote(self, symbol):
         self.check_expiration()  
         headers = {'Content-Type': 'application/json;charset=UTF-8', 'Authorization': f'Bearer {self.auth_token}'}
-        live_quote = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{symbol}/quotes?apikey=ROKUSTATS%40AMER.OAUTHAP", headers=headers)
+        live_quote = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{symbol}/quotes?apikey={client_id}", headers=headers)
         return live_quote.json()
 
     def get_transactions(self, start_date, end_date, data_type='ALL'):
@@ -45,7 +46,7 @@ class Ameritrade:
     def refresh_auth(self):
         print('refreshing token')
         headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
-        data = { 'grant_type': 'refresh_token', 'refresh_token': self.refresh_token, 'client_id': 'ROKUSTATS@AMER.OAUTHAP'}
+        data = { 'grant_type': 'refresh_token', 'refresh_token': self.refresh_token, 'client_id': }
         authReply = requests.post('https://api.tdameritrade.com/v1/oauth2/token', headers=headers, data=data)
         self.auth_token = authReply.json()['access_token']
         self.expire_time = time.time() + 1740 #29 mins, so token refreshes 1 min before expiration.
@@ -59,7 +60,7 @@ class Ameritrade:
     #     data = {'periodType': period_type, 'frequencyType': frequency_type, 'period': period, 'frequency': frequency,
     #             'endDate': end_date, 'startDate:': start_date, 'needExtendedHoursData': extended_hours}
     #     headers = {'Content-Type': 'application/json;charset=UTF-8', 'Authorization': f'Bearer {self.auth_token}'}
-    #     price_history = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{symbol}/pricehistory?apikey=ROKUSTATS%40AMER.OAUTHAP", headers=headers, data=data)
+    #     price_history = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{symbol}/pricehistory?apikey={client_id}", headers=headers, data=data)
     #     return price_history.json()
 
 
