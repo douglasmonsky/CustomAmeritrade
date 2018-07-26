@@ -27,6 +27,7 @@ class Ameritrade:
             with open(f'auth_token_{self.account_id}.pickle', 'rb') as f:
                 data = pickle.load(f)
                 self.auth_token, self.expire_time = data
+        self.check_expiration()
         self.default_headers = {'Content-Type': 'application/json;charset=UTF-8', 'Authorization': f'Bearer {self.auth_token}'}
         if self.print_auth:
             print(self.auth_token)
