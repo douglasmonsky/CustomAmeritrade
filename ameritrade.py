@@ -14,10 +14,11 @@ class Account:
 
 class Ameritrade:
 
-    def __init__(self, account, client_id=''):
+    def __init__(self, account, client_id='', print_auth=False):
         '''Takes in Account Object as argument.'''
         self.account = account
         self.client_id = client_id
+        self.print_auth = print_auth
         self.refresh_token = account.refresh_token
         self.account_id = account.account_id
         if account.auth_token:
@@ -27,6 +28,8 @@ class Ameritrade:
                 data = pickle.load(f)
                 self.auth_token, self.expire_time = data
         self.default_headers = {'Content-Type': 'application/json;charset=UTF-8', 'Authorization': f'Bearer {self.auth_token}'}
+        if self.print_auth:
+            print(self.auth_token)
      
     def check_expiration(self):
         if time.time() > self.expire_time:
@@ -57,6 +60,8 @@ class Ameritrade:
         data = [self.auth_token, self.expire_time]
         with open(f'auth_token_{self.account_id}.pickle', 'wb') as f:
             pickle.dump(data, f)
+        if self.print_auth:
+            print(self.auth_token)
 
     # def get_price_history(self, symbol, period_type, frequency_type, period=None, frequency=None, end_date=None, start_date=None, extended_hours=None):
     #     '''CURRENTLY NOT WORKING CORRECTLY, DOES NOT CONSIDER DATA'''
@@ -69,8 +74,8 @@ class Ameritrade:
 
 
 if __name__ == '__main__':
-    from privateinfo import MainAccount, client_id
-    ameritrade = Ameritrade(MainAccount, client_id)
+    from privateinfo import MainAccount, SecondAccount, client_id
+    ameritrade = Ameritrade(MainAccount, client_id, print_auth=True)
     # transactions = ameritrade.get_transactions('2018-01-01', '2018-07-23')
     # all_fees = 0
     # for transaction in transactions:
