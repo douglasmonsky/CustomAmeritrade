@@ -1,7 +1,7 @@
 import sqlite3
 from ameritrade import Ameritrade
 from database import Database
-from privateinfo import MainAccount, SecondAccount
+from privateinfo import MainAccount, SecondAccount, client_id
 
 class Portfolio:
 
@@ -45,22 +45,18 @@ class TransactionProcessor:
             self.transaction_list.append(transaction_obj)
     
 
-    def send_to_sql(self, db_name, transaction_list=None):
+    def send_to_sql(self, db_name, table_name, transaction_list=None):
         if not transaction_list:
             transaction_list = self.transaction_list
 
         transactions = []
         for transaction in transaction_list:
-            try:
-                self.format_time(transaction, "transactionDate")
-            except:
-                self.format_time(transaction, "transactionDate", "settlementDate")
-
-
-            data = (transactions['transactionId'], transactions['transactionDate'], transactions['netAmount'])
-            transactions.append('')
+            data = (transaction.transaction_id, transaction.transaction_type, transaction.symbol, 
+                    transaction.date_time, transaction.net, transaction.fee, transaction.amount)
+            transactions.append(data)
 
         database = Database(db_name)
+        database.data_entry(table_name, transactions, executemany=True)
 
 class Transaction:
 
@@ -74,7 +70,10 @@ class Transaction:
         if auto:
             self.fees = self.calculate_fees()
             self.net = self.calculate_net()
-            # self.date_time = self.format_time()
+            try:
+                self.date_time = self.format_time()
+            except:
+                self.date_time = self.format_time(conversion_type="settlementDate")
 
     def calculate_fees(self):
         fees = 0
@@ -89,13 +88,15 @@ class Transaction:
             net += transaction['netAmount']
         return round(net, 2)
 
-    def format_time(self, time_type, conversion_type=None):
+    def format_time(self, time_type="transactionDate", conversion_type=None):
         if not conversion_type:
             conversion_type = time_type
         if conversion_type != time_type and conversion_type == "transactionDate":
-            transaction[time_type] = f'{transaction[conversion_type]} 00:00:00'
+            date_time = f'{self.transaction_pieces[0][conversion_type]} 00:00:00'
         else:
-            transaction[time_type] = transaction[conversion_type].replace("T", " ").split("+")[0]   #"2018-07-26T15:25:29+0000" -->  "2018-07-26 15:25:29"
+            #"2018-07-26T15:25:29+0000" -->  "2018-07-26 15:25:29"
+            date_time = self.transaction_pieces[0][conversion_type].replace("T", " ").split("+")[0]
+        return date_time
 
 
 class Journal(Transaction):
@@ -134,15 +135,19 @@ class RecieveAndDeliever(Transaction):
 
 
 if __name__ == '__main__':
-    # database = Database('MainAccount')
-    # columns = [('transaction_id', 'INTEGER'), ('date', 'TEXT'), ]
-    # database.create_table()
-    ameritrade = Ameritrade(MainAccount)
+    database = Database('MainAccount.db')
+    columns = [('transaction_id', 'TEXT'), ('transaction_type', 'TEXT'), ('symbol', 'TEXT'),
+                 ('date', 'TEXT'), ('net', 'TEXT'), ('fees', 'TEXT'), ('amount', 'TEXT') ]
+    database.create_table('TestTable', columns)
+
+    ameritrade = Ameritrade(MainAccount, client_id)
     transactions_json = ameritrade.get_transactions('2018-01-01', '2018-07-23')
     processer = TransactionProcessor(transactions_json)
-    for transaction in processer.transaction_list:
-        # if transaction.transaction_id == '275581114':
-        print(transaction.transaction_type, transaction.symbol, transaction.amount, transaction.net, transaction.transaction_id)
+    processer.send_to_sql('MainAccount.db', 'TestTable')
+
+    # for transaction in processer.transaction_list:
+    #     # if transaction.transaction_id == '275581114':
+    #     print(transaction.transaction_type, transaction.symbol, transaction.amount, transaction.net, transaction.transaction_id)
 
     # net_total = 0
     # for transaction_type in processer.transactions:
