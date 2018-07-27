@@ -36,6 +36,10 @@ class TransactionProcessor:
             transaction_type = transaction_pieces[0]['type']
             if transaction_type == 'TRADE':
                 transaction_obj = Trade(transaction_id, transaction_pieces)
+            elif transaction_type == 'RECEIVE_AND_DELIVER':
+                transaction_obj = RecieveAndDeliever(transaction_id, transaction_pieces)
+            elif transaction_type == 'JOURNAL':
+                transaction_obj = Journal(transaction_id, transaction_pieces)
             else:
                 transaction_obj = Transaction(transaction_id, transaction_pieces)
             self.transaction_list.append(transaction_obj)
@@ -65,6 +69,8 @@ class Transaction:
         self.transaction_pieces = transaction_pieces
         self.transaction_type = transaction_type
         self.amount = 0
+        self.symbol = 'N/A'
+
         if auto:
             self.fees = self.calculate_fees()
             self.net = self.calculate_net()
@@ -104,15 +110,17 @@ class Trade(Transaction):
         super().__init__(transaction_id, transaction_pieces, transaction_type, auto)
         if auto:
             self.amount = self.calculate_amount()
+            self.symbol = transaction_pieces[0]['transactionItem']['instrument']['symbol']
 
     def calculate_amount(self):
         amount = 0
-
         for transaction in self.transaction_pieces:
             piece_amount = transaction['transactionItem']['amount']
             piece_description = transaction['description']
             if piece_description == "TRADE CORRECTION":
                 continue
+            elif piece_description == "SELL TRADE":
+                amount -= piece_amount
             else:
                 amount += piece_amount  
         return amount
@@ -122,6 +130,7 @@ class RecieveAndDeliever(Transaction):
 
     def __init__(self, transaction_id, transaction_pieces, transaction_type='RECEIVE_AND_DELIVER', auto=True):
         super().__init__(transaction_id, transaction_pieces, transaction_type, auto)
+        self.symbol = transaction_pieces[0]['transactionItem']['instrument']['symbol']
 
 
 if __name__ == '__main__':
@@ -132,9 +141,9 @@ if __name__ == '__main__':
     transactions_json = ameritrade.get_transactions('2018-01-01', '2018-07-23')
     processer = TransactionProcessor(transactions_json)
     for transaction in processer.transaction_list:
-        if transaction.transaction_id == '275581114':
-            print(transaction.net)
-            print('nextttt')
+        # if transaction.transaction_id == '275581114':
+        print(transaction.transaction_type, transaction.symbol, transaction.amount, transaction.net, transaction.transaction_id)
+
     # net_total = 0
     # for transaction_type in processer.transactions:
     #     for trade in processer.transactions[transaction_type].values():
