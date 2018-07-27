@@ -52,7 +52,7 @@ class TransactionProcessor:
         transactions = []
         for transaction in transaction_list:
             data = (transaction.transaction_id, transaction.transaction_type, transaction.symbol, 
-                    transaction.date_time, transaction.net, transaction.fee, transaction.amount)
+                    transaction.date_time, transaction.net, transaction.fees, transaction.amount)
             transactions.append(data)
 
         database = Database(db_name)
