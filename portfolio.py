@@ -43,7 +43,6 @@ class TransactionProcessor:
             else:
                 transaction_obj = Transaction(transaction_id, transaction_pieces)
             self.transaction_list.append(transaction_obj)
-    
 
     def send_to_sql(self, db_name, table_name, transaction_list=None):
         if not transaction_list:
@@ -57,6 +56,7 @@ class TransactionProcessor:
 
         database = Database(db_name)
         database.data_entry(table_name, transactions, executemany=True)
+
 
 class Transaction:
 
@@ -144,14 +144,3 @@ if __name__ == '__main__':
     transactions_json = ameritrade.get_transactions('2018-01-01', '2018-07-23')
     processer = TransactionProcessor(transactions_json)
     processer.send_to_sql('MainAccount.db', 'TestTable')
-
-    # for transaction in processer.transaction_list:
-    #     # if transaction.transaction_id == '275581114':
-    #     print(transaction.transaction_type, transaction.symbol, transaction.amount, transaction.net, transaction.transaction_id)
-
-    # net_total = 0
-    # for transaction_type in processer.transactions:
-    #     for trade in processer.transactions[transaction_type].values():
-    #         transaction = Transaction(trade)
-    #         net_total += transaction.calculate_fees()
-    # print(round(net_total, 2))
