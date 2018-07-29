@@ -4,3 +4,4 @@ privateinfo.py
 __pycache__/ameritrade.cpython-36.pyc
 __pycache__/privateinfo.cpython-36.pyc
 *.db
+__pycache__/portfolio.cpython-36.pyc

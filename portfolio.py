@@ -1,7 +1,8 @@
 import sqlite3
+import os
 from ameritrade import Ameritrade
 from database import Database
-from privateinfo import MainAccount, SecondAccount, client_id
+
 
 class Portfolio:
 
@@ -135,12 +136,14 @@ class RecieveAndDeliever(Transaction):
 
 
 if __name__ == '__main__':
-    database = Database('MainAccount.db')
-    columns = [('transaction_id', 'TEXT'), ('transaction_type', 'TEXT'), ('symbol', 'TEXT'),
-                 ('date', 'TEXT'), ('net', 'TEXT'), ('fees', 'TEXT'), ('amount', 'TEXT') ]
-    database.create_table('TestTable', columns)
+    from privateinfo import MainAccount, SecondAccount, client_id
+    # database = Database('MainAccount.db')
+    # columns = [('transaction_id', 'TEXT'), ('transaction_type', 'TEXT'), ('symbol', 'TEXT'),
+                 # ('date', 'TEXT'), ('net', 'TEXT'), ('fees', 'TEXT'), ('amount', 'TEXT') ]
+    # database.create_table('TestTable', columns)
 
     ameritrade = Ameritrade(MainAccount, client_id)
     transactions_json = ameritrade.get_transactions('2018-01-01', '2018-07-23')
     processer = TransactionProcessor(transactions_json)
-    processer.send_to_sql('MainAccount.db', 'TestTable')
+    # processer.send_to_sql('MainAccount.db', 'TestTable')
+    os.startfile('D:\\GitHub\\NRIStocks\\Earnings.xlsx')
