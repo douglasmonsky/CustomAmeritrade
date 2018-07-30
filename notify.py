@@ -8,6 +8,12 @@ from email import encoders
 from portfolio import TransactionProcessor
 
 
+class Email:
+
+    def __init__(self):
+        pass
+
+
 def send_mail(username, password, send_to, subject='', text='', files=None, server="smtp.gmail.com", port=587, isTls=True):
     msg = MIMEMultipart()
     msg['From'] = username
@@ -43,7 +49,6 @@ def notify_trade(id_list):
             new_transactions.append(transaction.transaction_id)
 
     send_mail(gmail_username, gmail_password, [send_to_email, ], subject='Testing', text=f'{new_transactions}')   
-
 
 
 if __name__ == "__main__":
