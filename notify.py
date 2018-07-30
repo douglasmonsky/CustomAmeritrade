@@ -28,8 +28,15 @@ class Email:
             text_lines.append(text)
         self.text = '\n'.join(text_lines)
 
-    def construct_positions_text(self, position_data, time_of_day):
+    def construct_positions_text(self, position_data, time_of_day, end_of_day=True):
         text_lines = []
+        start_total = position_data['securitiesAccount']["initialBalances"]["liquidationValue"]
+        current_total = position_data['securitiesAccount']["currentBalances"]["liquidationValue"]
+        if end_of_day:
+            text_lines.append(f'You started the day with an account value of ${start_total} and now have ${current_total}, that is a net change of {current_total - start_total}!')
+        else:
+            text_lines.append(f'You are starting the day with an account value of ${current_total}.')
+        text_lines.append('Your current positions are as follows:')
         positions = position_data['securitiesAccount']['positions']
         for position in positions:
             short_quant = int(position['shortQuantity'])
