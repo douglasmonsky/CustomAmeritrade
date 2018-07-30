@@ -6,9 +6,10 @@ import bs4
 
 class Account:
 
-    def __init__(self, account_id, refresh_token, auth_token=None):
+    def __init__(self, account_id, refresh_token, nickname=None, auth_token=None):
         self.account_id = account_id
         self.refresh_token = refresh_token
+        self.nickname = nickname
         self.auth_token = auth_token
 
 
@@ -77,11 +78,4 @@ class Ameritrade:
 if __name__ == '__main__':
     from privateinfo import MainAccount, SecondAccount, client_id
     ameritrade = Ameritrade(MainAccount, client_id, print_auth=True)
-    # transactions = ameritrade.get_transactions('2018-01-01', '2018-07-23')
-    # all_fees = 0
-    # for transaction in transactions:
-    #     fees = transaction['fees']
-    #     total_fee = sum(fees.values())
-    #     all_fees += total_fee
-    # print(all_fees)
     print(ameritrade.get_account_positions()['securitiesAccount']['currentBalances']['liquidationValue'])
