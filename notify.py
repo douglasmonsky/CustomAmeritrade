@@ -28,7 +28,7 @@ class Email:
             text_lines.append(text)
         self.text = '\n'.join(text_lines)
 
-    def construct_positions_text(self, position_data, time_of_day, end_of_day=True):
+    def construct_positions_text(self, position_data, time_of_day, end_of_day=True, news_data=False):
         text_lines = []
         start_total = position_data['securitiesAccount']["initialBalances"]["liquidationValue"]
         current_total = position_data['securitiesAccount']["currentBalances"]["liquidationValue"]

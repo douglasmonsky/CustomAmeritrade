@@ -25,6 +25,7 @@ class TransactionProcessor:
     def group_transactions(self):
         transactions = {}
         for transaction in self.ameritrade_json:
+            print(transaction)
             transaction_type = transaction['type']
             if transaction_type == 'TRADE':
                 transaction['transactionId'] = transaction['orderId']
@@ -133,6 +134,13 @@ class RecieveAndDeliever(Transaction):
     def __init__(self, transaction_id, transaction_pieces, transaction_type='RECEIVE_AND_DELIVER', auto=True):
         super().__init__(transaction_id, transaction_pieces, transaction_type, auto)
         self.symbol = transaction_pieces[0]['transactionItem']['instrument']['symbol']
+
+
+class Order:
+
+    def __init__(self, ameritrade_json):
+        self.ameritrade_json = ameritrade_json
+        
 
 
 if __name__ == '__main__':

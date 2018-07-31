@@ -23,17 +23,17 @@ class SessionTracker:
         self.starting_data = self.get_position_data()
         self.notify(self.starting_data, f'{self.account.nickname} start of day report', 'start_day')
 
-    def get_position_data(self):
-        positions_json = self.ameritrade.get_account_positions()
-        return positions_json
+    def close_session(self):
+        '''End monitoring, default to end at 4pm (End of trading day).'''
+        position_json = self.get_position_data()
+        self.notify(position_json, f'{self.account.nickname} end of day report', 'end_day')
+        self.session_running = False
 
-    def monitor(self):
-        self.session_running = True
-        while self.session_running == True:
-            self.tick()
-            time.sleep(self.tick_rate)  
+    def get_new_orders(self):
+        pass
 
     def get_new_transactions(self):
+        '''TRANSACTIONS DO NOT UPDATE LIVE, FOR LIVE UPDATES USE get_new_orders'''
         today = datetime.now().strftime("%Y-%m-%d")
         # today = '2018-07-27'#for testing remove
         transactions_json = self.ameritrade.get_transactions(today, today)
@@ -46,6 +46,16 @@ class SessionTracker:
                 self.seen_transactions.append(transaction.transaction_id)
         return new_transactions
 
+    def get_position_data(self):
+        positions_json = self.ameritrade.get_account_positions()
+        return positions_json  
+
+    def monitor(self):
+        self.session_running = True
+        while self.session_running == True:
+            self.tick()
+            time.sleep(self.tick_rate)
+
     def notify(self, data, subject, notification_type):
         '''Notify userlist that a transaction has been made.'''
         email = Email(subject)
@@ -55,22 +65,21 @@ class SessionTracker:
              email.construct_positions_text(data, self.endtime.strftime("%H:%M"))
         elif notification_type == 'start_day':
              email.construct_positions_text(data, self.starttime.strftime("%H:%M"), end_of_day=False)
-        email.send_email(self.username, self.password, self.recepients)
+        email.send_email(self.username, self.password, self.recepients)  
 
-    def tick(self):
+    def tick(self, tick_type='orders'):
         '''Perform actions on a preset time basis.'''
-        new_transactions = self.get_new_transactions()
-        if new_transactions:
-            self.notify(new_transactions, f'trades detected on {self.account.nickname}', 'trade')
+        if tick_type == 'orders':
+            data = self.get_new_orders()
+        elif tick_type == 'transactions'
+            data = self.get_new_transactions()
+        if data:
+            self.notify(data, f'trades detected on {self.account.nickname}', 'trade')
         now = datetime.now().time()
         if now > self.endtime:
             self.close_session()
 
-    def close_session(self):
-        '''End monitoring, default to end at 4pm (End of trading day).'''
-        position_json = self.get_position_data()
-        self.notify(position_json, f'{self.account.nickname} end of day report', 'end_day')
-        self.session_running = False
+    
 
 
 
@@ -82,7 +91,8 @@ if __name__ == "__main__":
     # tracking_session.monitor()
     tracking_session2 = SessionTracker(SecondAccount, client_id, gmail_username, gmail_password, [send_to_email])
     # tracking_session2.monitor()
-
+    tracking_session.session_running = True 
+    tracking_session2.session_running = True 
     while tracking_session.session_running == True and tracking_session2.session_running == True:
             tracking_session.tick()
             time.sleep(2)

@@ -77,5 +77,5 @@ class Ameritrade:
 
 if __name__ == '__main__':
     from privateinfo import MainAccount, SecondAccount, client_id
-    ameritrade = Ameritrade(MainAccount, client_id, print_auth=True)
+    ameritrade = Ameritrade(SecondAccount, client_id, print_auth=True)
     print(ameritrade.get_account_positions()['securitiesAccount']['currentBalances']['liquidationValue'])
