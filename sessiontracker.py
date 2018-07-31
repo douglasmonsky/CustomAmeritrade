@@ -1,12 +1,13 @@
 import time
 from ameritrade import Ameritrade
 from datetime import datetime
+from finviz import Finviz
 from portfolio import TransactionProcessor
 from notify import Email
 
 class SessionTracker:
 
-    def __init__(self, account, client_id, username, password, recepients, seen_transactions=None, endtime='16:00'):
+    def __init__(self, account, client_id, username, password, recepients, seen_transactions=None, endtime='16:00', finviz_session=None):
         self.account = account
         self.client_id = client_id
         self.username = username
@@ -17,6 +18,7 @@ class SessionTracker:
             self.seen_transactions = []
         self.starttime = datetime.now().time()
         self.endtime = datetime.strptime(endtime, '%H:%M').time()
+        self.finviz_session = finviz_session
         self.session_running = False
         self.tick_rate = 60
         self.ameritrade = Ameritrade(self.account, self.client_id)
@@ -56,22 +58,23 @@ class SessionTracker:
             self.tick()
             time.sleep(self.tick_rate)
 
-    def notify(self, data, subject, notification_type):
+    def notify(self, data, subject, notification_type, include_news=True):
         '''Notify userlist that a transaction has been made.'''
-        email = Email(subject)
+        email = Email(subject, finviz_session=self.finviz_session)
         if notification_type == 'trade':
             email.construct_trade_text(data)
         elif notification_type == 'end_day':
              email.construct_positions_text(data, self.endtime.strftime("%H:%M"))
         elif notification_type == 'start_day':
-             email.construct_positions_text(data, self.starttime.strftime("%H:%M"), end_of_day=False)
-        email.send_email(self.username, self.password, self.recepients)  
+             email.construct_positions_text(data, self.starttime.strftime("%H:%M"), 
+                                            end_of_day=False, include_news=include_news)
+        email.send_email(self.username, self.password, self.recepients, html=True)  
 
     def tick(self, tick_type='orders'):
         '''Perform actions on a preset time basis.'''
         if tick_type == 'orders':
             data = self.get_new_orders()
-        elif tick_type == 'transactions'
+        elif tick_type == 'transactions':
             data = self.get_new_transactions()
         if data:
             self.notify(data, f'trades detected on {self.account.nickname}', 'trade')
@@ -86,15 +89,19 @@ class SessionTracker:
 
 
 if __name__ == "__main__":
-    from privateinfo import MainAccount, SecondAccount, client_id, gmail_username, gmail_password, send_to_email
-    tracking_session = SessionTracker(MainAccount, client_id, gmail_username, gmail_password, [send_to_email])
-    # tracking_session.monitor()
-    tracking_session2 = SessionTracker(SecondAccount, client_id, gmail_username, gmail_password, [send_to_email])
-    # tracking_session2.monitor()
-    tracking_session.session_running = True 
-    tracking_session2.session_running = True 
-    while tracking_session.session_running == True and tracking_session2.session_running == True:
-            tracking_session.tick()
-            time.sleep(2)
-            tracking_session2.tick()
-            time.sleep(tracking_session.tick_rate)  
+    from privateinfo import MainAccount, SecondAccount, client_id, gmail_username, gmail_password, send_to_email, finviz_username, finviz_password
+    finviz_session = Finviz(True, finviz_username, finviz_password)
+    tracking_session = SessionTracker(MainAccount, client_id, gmail_username, gmail_password, [send_to_email], finviz_session=finviz_session)
+    tracking_session.monitor()
+
+
+
+    # tracking_session2 = SessionTracker(SecondAccount, client_id, gmail_username, gmail_password, [send_to_email])
+    # # tracking_session2.monitor()
+    # tracking_session.session_running = True 
+    # tracking_session2.session_running = True 
+    # while tracking_session.session_running == True and tracking_session2.session_running == True:
+    #         tracking_session.tick()
+    #         time.sleep(2)
+    #         tracking_session2.tick()
+    #         time.sleep(tracking_session.tick_rate)  

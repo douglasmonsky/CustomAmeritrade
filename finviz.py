@@ -1,6 +1,6 @@
 import bs4
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Finviz:
 
@@ -21,9 +21,10 @@ class Finviz:
             self.current_page = search_page
             self.current_soup = soup
 
-    def get_news(self, symbol):
+    def get_news(self, symbol, days_back=2):
         new_articles = []
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        refrence_day = today - timedelta(days=days_back)
         search_page = f'https://elite.finviz.com/quote.ashx?t={symbol}'
         self.page_check(search_page)
         table = self.current_soup.find('table', {'class':'fullview-news-outer'})
@@ -36,8 +37,8 @@ class Finviz:
                 time = date_time[1]
             else:
                 time = date_time[0]
-
-            if date == today:
+            time = time.split('\\xa0\\')[0]
+            if date >= refrence_day:
                 href = article.find('a')['href']
                 title = article.text
                 new_articles.append([datetime.strftime(date,'%b-%d-%y'), time, title, href])
