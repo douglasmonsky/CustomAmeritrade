@@ -29,10 +29,6 @@ class Email:
             text_lines.append(text)
         self.text = '<br />'.join(text_lines)
 
-    # def get_news_text(self, symbol):
-    #     news_text = self.finviz_session.get_news(symbol)
-    #     return news_text
-
     def construct_positions_text(self, position_data, time_of_day, end_of_day=True, include_news=False):
         text_lines = []
         start_total = position_data['securitiesAccount']["initialBalances"]["liquidationValue"]
@@ -67,6 +63,43 @@ class Email:
             text_lines.append('')
         self.text = '<br />'.join(text_lines)
 
+    def construct_orders_text(self, orders_data, position_data=None):
+        text_lines = []
+        for order in orders_data:
+            order_type = order['orderType']
+            session = order['session']
+            quant = int(order['quantity'])
+            filled = int(order['filledQuantity'])
+            price = order['price']
+            duration = order['duration']
+            status = order['status']
+            specifics = order['orderLegCollection'][0]
+            symbol = specifics['instrument']['symbol']
+            instruction = specifics['instruction']
+            effect = specifics['positionEffect']
+            text_lines.append(f'A(n) {instruction} {order_type} order (duration: {duration}) for {quant} shares of {symbol} at {price} a share has been placed. The current status as of now is {status} with {filled} shares completed.')
+        text_lines.append('<br />This results in the following active postions:')
+        if position_data:
+            positions_data = position_data['securitiesAccount']['positions']
+            for position in positions_data:
+                short_quant = int(position['shortQuantity'])
+                long_quant = int(position['longQuantity'])
+                if short_quant:
+                    position_type = 'short'
+                    quant = short_quant
+                else:
+                    position_type = 'long'
+                    quant = long_quant
+                avg_price = round(float(position['averagePrice']), 2)
+                day_change = round(float(position['currentDayProfitLoss']), 2)
+                symbol = position['instrument']['symbol']
+                text = f'{position_type.upper()} {quant} shares of {symbol} for an average price of {avg_price}. This is a net change of {day_change}.'
+                text_lines.append(text)
+        self.text = '<br />'.join(text_lines)
+       
+
+
+
     def send_email(self, username, password, recepient, server="smtp.gmail.com", port=587, isTls=True, html=True):
         msg = MIMEMultipart()
         msg['From'] = username
@@ -92,24 +125,3 @@ class Email:
         smtp.login(username, password)
         smtp.sendmail(username, recepient, msg.as_string())
         smtp.quit()
-
-
-
-
-def notify_trade(id_list):
-    from privateinfo import MainAccount, SecondAccount, client_id, gmail_username, gmail_password, send_to_email, send_to_phone
-    ameritrade = Ameritrade(MainAccount, client_id)
-    transactions_json = ameritrade.get_transactions('2018-07-27', '2018-07-27', 'TRADE')
-    processer = TransactionProcessor(transactions_json)
-    transactions = processer.transaction_list
-
-    new_transactions = []
-    for transaction in transactions:
-        if transaction.transaction_id not in id_list:
-            new_transactions.append(transaction.transaction_id)
-
-    send_mail(gmail_username, gmail_password, [send_to_email, ], subject='Testing', text=f'{new_transactions}')   
-
-
-if __name__ == "__main__":
-    notify_trade([])

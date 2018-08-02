@@ -2,8 +2,10 @@ import time
 from ameritrade import Ameritrade
 from datetime import datetime
 from finviz import Finviz
-from portfolio import TransactionProcessor
 from notify import Email
+from orders import Orders
+from portfolio import TransactionProcessor
+
 
 class SessionTracker:
 
@@ -23,6 +25,7 @@ class SessionTracker:
         self.tick_rate = 60
         self.ameritrade = Ameritrade(self.account, self.client_id)
         self.starting_data = self.get_position_data()
+        self.orders = Orders(self.get_position_data('orders'))
         self.notify(self.starting_data, f'{self.account.nickname} start of day report', 'start_day')
 
     def close_session(self):
@@ -32,7 +35,8 @@ class SessionTracker:
         self.session_running = False
 
     def get_new_orders(self):
-        pass
+        orders = self.get_position_data('orders')
+        return self.orders.get_new_orders(orders)
 
     def get_new_transactions(self):
         '''TRANSACTIONS DO NOT UPDATE LIVE, FOR LIVE UPDATES USE get_new_orders'''
@@ -48,8 +52,8 @@ class SessionTracker:
                 self.seen_transactions.append(transaction.transaction_id)
         return new_transactions
 
-    def get_position_data(self):
-        positions_json = self.ameritrade.get_account_positions()
+    def get_position_data(self, data_type='positions'):
+        positions_json = self.ameritrade.get_account_positions(data_type)
         return positions_json  
 
     def monitor(self):
@@ -58,10 +62,12 @@ class SessionTracker:
             self.tick()
             time.sleep(self.tick_rate)
 
-    def notify(self, data, subject, notification_type, include_news=True):
+    def notify(self, data, subject, notification_type, data2=None, include_news=True):
         '''Notify userlist that a transaction has been made.'''
         email = Email(subject, finviz_session=self.finviz_session)
-        if notification_type == 'trade':
+        if notification_type == 'orders':
+            email.construct_orders_text(data, data2)
+        elif notification_type == 'transactions':
             email.construct_trade_text(data)
         elif notification_type == 'end_day':
              email.construct_positions_text(data, self.endtime.strftime("%H:%M"))
@@ -74,10 +80,12 @@ class SessionTracker:
         '''Perform actions on a preset time basis.'''
         if tick_type == 'orders':
             data = self.get_new_orders()
+            data2 = self.get_position_data()
         elif tick_type == 'transactions':
             data = self.get_new_transactions()
+            data2 = None
         if data:
-            self.notify(data, f'trades detected on {self.account.nickname}', 'trade')
+            self.notify(data, f'trades detected on {self.account.nickname}', tick_type, data2)
         now = datetime.now().time()
         if now > self.endtime:
             self.close_session()
