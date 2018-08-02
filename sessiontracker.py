@@ -97,7 +97,7 @@ class SessionTracker:
 
 
 if __name__ == "__main__":
-    from privateinfo import MainAccount, SecondAccount, client_id, gmail_username, gmail_password, send_to_email, finviz_username, finviz_password
+    from privateinfo import MainAccount, SecondAccount, client_id, gmail_username, gmail_password, send_to_email, send_to_phone, finviz_username, finviz_password
     finviz_session = Finviz(True, finviz_username, finviz_password)
     tracking_session = SessionTracker(MainAccount, client_id, gmail_username, gmail_password, [send_to_email], finviz_session=finviz_session)
     # tracking_session.monitor()

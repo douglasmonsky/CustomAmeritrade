@@ -1,14 +1,14 @@
 class Positions:
 
-    def __init__(self, position_data):
-        self.position_data = position_data['securitiesAccount']
-        self.start_total = self.position_data["initialBalances"]["liquidationValue"]
-        self.current_total = self.position_data["currentBalances"]["liquidationValue"]
-        self.stock_positions = self.position_data['positions']
+    def __init__(self, ameritrade_data):
+        self.ameritrade_data = ameritrade_data['securitiesAccount']
+        self.start_total = self.ameritrade_data["initialBalances"]["liquidationValue"]
+        self.current_total = self.ameritrade_data["currentBalances"]["liquidationValue"]
+        self.positions_data = self.ameritrade_data['positions']
 
 
 
-        for position in self.stock_positions:
+        for position in self.positions_data:
             short_quant = int(position['shortQuantity'])
             long_quant = int(position['longQuantity'])
             if short_quant:
@@ -20,6 +20,13 @@ class Positions:
             avg_price = round(float(position['averagePrice']), 2)
             day_change = round(float(position['currentDayProfitLoss']), 2)
             symbol = position['instrument']['symbol']
+
+
+
+
+
+
+
             text = f'{position_type.upper()} {quant} shares of {symbol} for an average price of {avg_price}. This is a net change of {day_change}.'
             text_lines.append(text)
             if self.finviz_session and include_news == True:

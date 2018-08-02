@@ -22,8 +22,7 @@ class Orders:
                         self.active_order_ids.append(order_id)
                     self.seen_order_ids.append(order_id)
         except Exception as e:
-            print(e)
+            print(ameritrade_json)
             new_orders = []
-        print(new_orders)
         return new_orders
 
