@@ -50,8 +50,10 @@ class Email:
                 quant = long_quant
             avg_price = round(float(position['averagePrice']), 2)
             day_change = round(float(position['currentDayProfitLoss']), 2)
+            market_value = position['marketValue']
+            current_pps = round(market_value/quant, 2)
             symbol = position['instrument']['symbol']
-            text = f'{position_type.upper()} {quant} shares of {symbol} for an average price of {avg_price}. This is a net change of {day_change}.'
+            text = f'{position_type.upper()} {quant} shares of {symbol} for an average price of {avg_price}. The current price per share is {current_pps}. This is a net change of {day_change}.'
             text_lines.append(text)
             if self.finviz_session and include_news == True:
                 news_container = self.finviz_session.get_news(symbol)
@@ -70,7 +72,10 @@ class Email:
             session = order['session']
             quant = int(order['quantity'])
             filled = int(order['filledQuantity'])
-            price = order['price']
+            try:
+                price = order['price']
+            except:
+                price = 'N/A'
             duration = order['duration']
             status = order['status']
             specifics = order['orderLegCollection'][0]
@@ -92,13 +97,12 @@ class Email:
                     quant = long_quant
                 avg_price = round(float(position['averagePrice']), 2)
                 day_change = round(float(position['currentDayProfitLoss']), 2)
+                market_value = position['marketValue']
+                current_pps = round(market_value/quant, 2)
                 symbol = position['instrument']['symbol']
-                text = f'{position_type.upper()} {quant} shares of {symbol} for an average price of {avg_price}. This is a net change of {day_change}.'
+                text = f'{position_type.upper()} {quant} shares of {symbol} for an average price of {avg_price}. The current price per share is {current_pps}. This is a net change of {day_change}.'
                 text_lines.append(text)
         self.text = '<br />'.join(text_lines)
-       
-
-
 
     def send_email(self, username, password, recepient, server="smtp.gmail.com", port=587, isTls=True, html=True):
         msg = MIMEMultipart()

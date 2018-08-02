@@ -100,16 +100,16 @@ if __name__ == "__main__":
     from privateinfo import MainAccount, SecondAccount, client_id, gmail_username, gmail_password, send_to_email, finviz_username, finviz_password
     finviz_session = Finviz(True, finviz_username, finviz_password)
     tracking_session = SessionTracker(MainAccount, client_id, gmail_username, gmail_password, [send_to_email], finviz_session=finviz_session)
-    tracking_session.monitor()
+    # tracking_session.monitor()
 
 
 
-    # tracking_session2 = SessionTracker(SecondAccount, client_id, gmail_username, gmail_password, [send_to_email])
+    tracking_session2 = SessionTracker(SecondAccount, client_id, gmail_username, gmail_password, [send_to_email], finviz_session=finviz_session)
     # # tracking_session2.monitor()
-    # tracking_session.session_running = True 
-    # tracking_session2.session_running = True 
-    # while tracking_session.session_running == True and tracking_session2.session_running == True:
-    #         tracking_session.tick()
-    #         time.sleep(2)
-    #         tracking_session2.tick()
-    #         time.sleep(tracking_session.tick_rate)  
+    tracking_session.session_running = True 
+    tracking_session2.session_running = True 
+    while tracking_session.session_running == True and tracking_session2.session_running == True:
+            tracking_session.tick()
+            time.sleep(2)
+            tracking_session2.tick()
+            time.sleep(tracking_session.tick_rate)  

@@ -9,7 +9,7 @@ class Finviz:
         self.headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
         "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"}
         if elite:
-            login = { 'email' : username, 'password' : password}
+            login = {'email' : username, 'password' : password}
             self.session.post('https://finviz.com/login_submit.ashx', data=login, headers=self.headers)
         self.current_page = None
         self.current_soup = None
