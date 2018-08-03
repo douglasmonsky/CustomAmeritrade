@@ -47,8 +47,21 @@ class Finviz:
                 new_articles.append([datetime.strftime(date,'%b-%d-%y'), time, title, href])
         return new_articles
 
-    def open_screener(self):
-        self.page_check('https://finviz.com/screener.ashx')
+    def open_screener(self, link_suffix=''):
+        self.page_check(f'https://finviz.com/screener.ashx{link_suffix}')
+
+        presets = {}
+        try:
+            presets_soup = self.current_soup.find('select', {'class': 'body-combo-text'})
+            for item in presets_soup.find_all('option'):
+                name = item.text
+                if 's:' in name:
+                    name = name.split('s: ')[1]
+                    link_suffix = item['value']
+                    presets[name] = link_suffix
+        except KeyError:
+            pass
+        return presets
 
     def download(self, filename='finviz_data.csv'):
         if 'screener' not in self.current_page:
@@ -70,4 +83,5 @@ if __name__ == "__main__":
     from privateinfo import finviz_username, finviz_password
     finviz = Finviz(True, finviz_username, finviz_password)
     news =  finviz.get_news('aapl')
-    finviz.download()
+    # finviz.download()
+    print(finviz.open_screener())
