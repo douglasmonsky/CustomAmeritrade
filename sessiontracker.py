@@ -23,7 +23,7 @@ class SessionTracker:
         self.finviz_session = finviz_session
         self.session_running = False
         self.tick_rate = 60
-        self.ameritrade = Ameritrade(self.account, self.client_id)
+        self.ameritrade = Ameritrade(self.account, self.client_id, print_auth=True)
         self.starting_data = self.get_position_data()
         self.orders = Orders(self.get_position_data('orders'))
         self.notify(self.starting_data, f'{self.account.nickname} start of day report', 'start_day')
@@ -34,9 +34,9 @@ class SessionTracker:
         self.notify(position_json, f'{self.account.nickname} end of day report', 'end_day')
         self.session_running = False
 
-    def get_new_orders(self):
-        orders = self.get_position_data('orders')
-        return self.orders.get_new_orders(orders)
+    def get_new_orders(self, orders_info):
+        # orders_info = self.get_position_data('orders')
+        return self.orders.get_new_orders(orders_info)
 
     def get_new_transactions(self):
         '''TRANSACTIONS DO NOT UPDATE LIVE, FOR LIVE UPDATES USE get_new_orders'''
@@ -79,8 +79,9 @@ class SessionTracker:
     def tick(self, tick_type='orders'):
         '''Perform actions on a preset time basis.'''
         if tick_type == 'orders':
-            data = self.get_new_orders()
-            data2 = self.get_position_data()
+            json = self.get_position_data('positions,orders')
+            data = self.get_new_orders(json)
+            data2 = json
         elif tick_type == 'transactions':
             data = self.get_new_transactions()
             data2 = None

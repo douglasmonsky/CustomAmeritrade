@@ -22,7 +22,8 @@ class Orders:
                         self.active_order_ids.append(order_id)
                     self.seen_order_ids.append(order_id)
         except Exception as e:
-            print(ameritrade_json)
+            if ameritrade_json == {"error": "The access token being passed has expired or is invalid."}:
+                print(ameritrade_json, 'in orders')
             new_orders = []
         return new_orders
 
