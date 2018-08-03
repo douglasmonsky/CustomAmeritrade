@@ -5,17 +5,25 @@ from datetime import datetime, timedelta
 class Finviz:
 
     def __init__(self, elite=False, username=None, password=None):
+        self.username = username
+        self.password = password
         self.session = requests.Session()
         self.headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
         "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"}
         if elite:
-            login = {'email' : username, 'password' : password}
+            login = {'email' : self.username, 'password' : self.password}
             self.session.post('https://finviz.com/login_submit.ashx', data=login, headers=self.headers)
-            # req = self.session.get('https://elite.finviz.com/myaccount.ashx', headers=self.headers)
-            # soup = bs4.BeautifulSoup(req.text, "html.parser")
-            # print(soup)
         self.current_page = None
         self.current_soup = None
+
+    def check_login_status(self):
+        self.page_check('https://elite.finviz.com/myaccount.ashx')
+        try:
+            name_displayed = self.current_soup.find('span', {'class': 'body-text'}).text
+            logged_in = name_displayed == f'Account: {self.username}'
+        except AttributeError:
+            logged_in = False
+        return logged_in
 
     def page_check(self, search_page):
         if self.current_page != search_page:
@@ -48,8 +56,7 @@ class Finviz:
         return new_articles
 
     def open_screener(self, link_suffix=''):
-        self.page_check(f'https://finviz.com/screener.ashx{link_suffix}')
-
+        self.page_check(f'https://finviz.com/screener.ashx?{link_suffix}')
         presets = {}
         try:
             presets_soup = self.current_soup.find('select', {'class': 'body-combo-text'})
@@ -64,12 +71,16 @@ class Finviz:
         return presets
 
     def download(self, filename='finviz_data.csv'):
+        '''
+        Downloads the data on the page via finviz's export functionality.
+        currently only downloads on screener page, planning to add functionality for groups.
+        '''
         if 'screener' not in self.current_page:
             self.open_screener()
         try:
             links = self.current_soup.find_all('a', {'class': 'tab-link'})
             download_link = links[-2]['href']
-            download_link = f'https://elite.finviz.com/{link}'
+            download_link = f'https://elite.finviz.com/{download_link}'
         except:
             download_link = 'https://elite.finviz.com/export.ashx?v=111'
         req = self.session.get(download_link, headers=self.headers, allow_redirects=True, stream=True)
@@ -78,10 +89,11 @@ class Finviz:
             for row in soup:
                 csvfile.write(row)
 
-
 if __name__ == "__main__":
     from privateinfo import finviz_username, finviz_password
     finviz = Finviz(True, finviz_username, finviz_password)
-    news =  finviz.get_news('aapl')
+    # news =  finviz.get_news('aapl')
     # finviz.download()
-    print(finviz.open_screener())
+    # presets = finviz.open_screener()
+    # finviz.open_screener(presets['New Screen'])
+    # finviz.download()

@@ -6,3 +6,4 @@ __pycache__/privateinfo.cpython-36.pyc
 *.db
 __pycache__/portfolio.cpython-36.pyc
 *.pyc
+*.csv

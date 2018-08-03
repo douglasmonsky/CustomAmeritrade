@@ -22,6 +22,7 @@ class Ameritrade:
         self.print_auth = print_auth
         self.refresh_token = account.refresh_token
         self.account_id = account.account_id
+        self.session = requests.Session()
         if account.auth_token:
             self.auth_token = account.auth_token
             self.expire_time = time.time() + 1740
@@ -40,25 +41,25 @@ class Ameritrade:
 
     def get_account_positions(self, info_type='positions'):
         self.check_expiration()
-        data = requests.get(f"https://api.tdameritrade.com/v1/accounts/{self.account_id}?fields={info_type}", headers=self.default_headers)
+        data = self.session.get(f"https://api.tdameritrade.com/v1/accounts/{self.account_id}?fields={info_type}", headers=self.default_headers)
         return data.json()
     
     def get_live_quote(self, symbol):
         self.check_expiration()  
-        data = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{symbol}/quotes?apikey={self.client_id}", headers=self.default_headers)
+        data = self.session.get(f"https://api.tdameritrade.com/v1/marketdata/{symbol}/quotes?apikey={self.client_id}", headers=self.default_headers)
         return data.json()
 
     def get_transactions(self, start_date, end_date, data_type='ALL'):
         ''''start and end date must be in YYYY-MM-DD format'''
         self.check_expiration()
-        data = requests.get(f"https://api.tdameritrade.com/v1/accounts/{self.account_id}/transactions?type={data_type}&startDate={start_date}&endDate={end_date}", headers=self.default_headers)
+        data = self.session.get(f"https://api.tdameritrade.com/v1/accounts/{self.account_id}/transactions?type={data_type}&startDate={start_date}&endDate={end_date}", headers=self.default_headers)
         return data.json()
 
     def refresh_auth(self):
         print(f'refreshing {self.account.account_id} {self.account.nickname} token')
         headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
         data = { 'grant_type': 'refresh_token', 'refresh_token': self.refresh_token, 'client_id': self.client_id}
-        authReply = requests.post('https://api.tdameritrade.com/v1/oauth2/token', headers=headers, data=data)
+        authReply = self.session.post('https://api.tdameritrade.com/v1/oauth2/token', headers=headers, data=data)
         self.auth_token = authReply.json()['access_token']
         self.expire_time = time.time() + 1740 #29 mins, so token refreshes 1 min before expiration.
         data = [self.auth_token, self.expire_time]

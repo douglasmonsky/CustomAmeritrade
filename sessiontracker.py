@@ -35,7 +35,6 @@ class SessionTracker:
         self.session_running = False
 
     def get_new_orders(self, orders_info):
-        # orders_info = self.get_position_data('orders')
         return self.orders.get_new_orders(orders_info)
 
     def get_new_transactions(self):
@@ -95,16 +94,17 @@ if __name__ == "__main__":
     from privateinfo import MainAccount, SecondAccount, client_id, gmail_username, gmail_password, send_to_email, send_to_phone, finviz_username, finviz_password
     finviz_session = Finviz(True, finviz_username, finviz_password)
     tracking_session = SessionTracker(MainAccount, client_id, gmail_username, gmail_password, [send_to_email], finviz_session=finviz_session)
-    # tracking_session.monitor()
-
-
 
     tracking_session2 = SessionTracker(SecondAccount, client_id, gmail_username, gmail_password, [send_to_email], finviz_session=finviz_session)
-    # # tracking_session2.monitor()
     tracking_session.session_running = True 
     tracking_session2.session_running = True 
     while tracking_session.session_running == True and tracking_session2.session_running == True:
+        try:
             tracking_session.tick()
-            time.sleep(2)
+            time.sleep(5)
             tracking_session2.tick()
-            time.sleep(tracking_session.tick_rate)  
+            time.sleep(tracking_session.tick_rate)
+        except Exception as e:
+            print(e)
+            time.sleep(30)
+            continue  
