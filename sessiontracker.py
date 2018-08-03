@@ -90,12 +90,6 @@ class SessionTracker:
         if now > self.endtime:
             self.close_session()
 
-    
-
-
-
-
-
 if __name__ == "__main__":
     from privateinfo import MainAccount, SecondAccount, client_id, gmail_username, gmail_password, send_to_email, send_to_phone, finviz_username, finviz_password
     finviz_session = Finviz(True, finviz_username, finviz_password)

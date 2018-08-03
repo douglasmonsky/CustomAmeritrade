@@ -11,6 +11,9 @@ class Finviz:
         if elite:
             login = {'email' : username, 'password' : password}
             self.session.post('https://finviz.com/login_submit.ashx', data=login, headers=self.headers)
+            # req = self.session.get('https://elite.finviz.com/myaccount.ashx', headers=self.headers)
+            # soup = bs4.BeautifulSoup(req.text, "html.parser")
+            # print(soup)
         self.current_page = None
         self.current_soup = None
 
@@ -44,9 +47,27 @@ class Finviz:
                 new_articles.append([datetime.strftime(date,'%b-%d-%y'), time, title, href])
         return new_articles
 
+    def open_screener(self):
+        self.page_check('https://finviz.com/screener.ashx')
+
+    def download(self, filename='finviz_data.csv'):
+        if 'screener' not in self.current_page:
+            self.open_screener()
+        try:
+            links = self.current_soup.find_all('a', {'class': 'tab-link'})
+            download_link = links[-2]['href']
+            download_link = f'https://elite.finviz.com/{link}'
+        except:
+            download_link = 'https://elite.finviz.com/export.ashx?v=111'
+        req = self.session.get(download_link, headers=self.headers, allow_redirects=True, stream=True)
+        soup = bs4.BeautifulSoup(req.text, "html.parser")
+        with open(filename, 'w', newline='') as csvfile:
+            for row in soup:
+                csvfile.write(row)
+
+
 if __name__ == "__main__":
     from privateinfo import finviz_username, finviz_password
     finviz = Finviz(True, finviz_username, finviz_password)
     news =  finviz.get_news('aapl')
-    for story in news:
-        print(story)
+    finviz.download()
