@@ -23,7 +23,7 @@ class SessionTracker:
         self.finviz_session = finviz_session
         self.session_running = False
         self.tick_rate = 60
-        self.ameritrade = Ameritrade(self.account, self.client_id, print_auth=True)
+        self.ameritrade = Ameritrade(self.account, self.client_id, print_auth=False)
         self.starting_data = self.get_position_data()
         self.orders = Orders(self.get_position_data('orders'))
         self.notify(self.starting_data, f'{self.account.nickname} start of day report', 'start_day')

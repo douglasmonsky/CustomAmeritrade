@@ -1,4 +1,5 @@
 import bs4
+import csv
 import requests
 from datetime import datetime, timedelta
 
@@ -40,6 +41,7 @@ class Finviz:
         self.page_check(search_page)
         table = self.current_soup.find('table', {'class':'fullview-news-outer'})
         rows = table.find_all('tr')
+
         for row in rows:
             time, article = row.find_all('td')
             date_time = time.text.split(" ")
@@ -70,30 +72,42 @@ class Finviz:
             pass
         return presets
 
-    def download(self, filename='finviz_data.csv'):
+    def pull_data(self, download=False, filename='finviz_data.csv'):
         '''
-        Downloads the data on the page via finviz's export functionality.
-        currently only downloads on screener page, planning to add functionality for groups.
+        Downloads the data on the page via finviz's export functionality. Must be on a 
+        page that has this functionality (e.g. the screener or groups_overview).
         '''
-        if 'screener' not in self.current_page:
-            self.open_screener()
-        try:
-            links = self.current_soup.find_all('a', {'class': 'tab-link'})
-            download_link = links[-2]['href']
-            download_link = f'https://elite.finviz.com/{download_link}'
-        except:
-            download_link = 'https://elite.finviz.com/export.ashx?v=111'
+        links = self.current_soup.find_all('a', {'class': 'tab-link'})
+        for link in links:
+             if link.text == 'export':
+                download_link = link['href']
+                download_link = f'https://elite.finviz.com/{download_link}'
+
         req = self.session.get(download_link, headers=self.headers, allow_redirects=True, stream=True)
-        soup = bs4.BeautifulSoup(req.text, "html.parser")
-        with open(filename, 'w', newline='') as csvfile:
-            for row in soup:
-                csvfile.write(row)
+        csv_text = req.text
+
+        split_text = csv_text.split('\n')
+        rows = list(csv.reader(split_text))
+        headers = rows[0]
+        
+        data = []
+        for row in rows[1:]:
+            row_data = {}
+            for i, col in enumerate(row):
+                row_data[headers[i]] = col
+            if row_data:
+                data.append(row_data)
+
+        if download:
+            with open(filename, 'w', newline='') as csvfile:
+                csvfile.write(csv_text)
+
+        return data
 
 if __name__ == "__main__":
     from privateinfo import finviz_username, finviz_password
     finviz = Finviz(True, finviz_username, finviz_password)
-    # news =  finviz.get_news('aapl')
-    # finviz.download()
-    # presets = finviz.open_screener()
+    presets = finviz.open_screener()
     # finviz.open_screener(presets['New Screen'])
-    # finviz.download()
+    data = finviz.pull_data(True)
+    print(data[-1])
