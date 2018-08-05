@@ -8,18 +8,14 @@ from email import encoders
 from portfolio import TransactionProcessor
 
 
-class Message:
 
-    def __init__(self, subject='', text='', files=None, finviz_session=None, end_line='\n'):
+class Email:
+
+    def __init__(self, subject='', text='', files=None, finviz_session=None):
         self.subject = subject
         self.text = text
         self.files = files
         self.finviz_session = finviz_session
-        self.end_line = end_line
-
-    def tokenize_text(self):
-        sentences = self.text.split(self.end_line)
-        return sentences
 
     def construct_trade_text(self, transactions):
         text_lines = []
@@ -32,16 +28,16 @@ class Message:
             price_per_share = round(transaction.net / transaction.amount, 2)
             text = f'{transaction.transaction_type} has been executed. {abs(int(transaction.amount))} share(s) of {transaction.symbol} has been {trade_type} at aprox. {price_per_share} per share.'
             text_lines.append(text)
-        self.text = self.end_line.join(text_lines)
+        self.text = '<br />'.join(text_lines)
 
     def construct_positions_text(self, position_data, time_of_day, end_of_day=True, include_news=False):
         text_lines = []
         start_total = position_data['securitiesAccount']["initialBalances"]["liquidationValue"]
         current_total = position_data['securitiesAccount']["currentBalances"]["liquidationValue"]
         if end_of_day:
-            text_lines.append(f'You started the day with an account value of ${start_total} and now have ${current_total}, that is a net change of {round(current_total - start_total, 2)}.{self.end_line}')
+            text_lines.append(f'You started the day with an account value of ${start_total} and now have ${current_total}, that is a net change of {round(current_total - start_total, 2)}.<br />')
         else:
-            text_lines.append(f'You are starting the day with an account value of ${current_total}.{self.end_line}')
+            text_lines.append(f'You are starting the day with an account value of ${current_total}.<br />')
         text_lines.append(f'As of {time_of_day} today,  Your current positions are as follows:')
         positions = position_data['securitiesAccount']['positions']
         for position in positions:
@@ -68,7 +64,7 @@ class Message:
                         news_text = f'{news[0]}, {news[1].strip()}: <a href="{news[3]}">{news[2]}</a>'
                         text_lines.append(news_text)
             text_lines.append('')
-        self.text = self.end_line.join(text_lines)
+        self.text = '<br />'.join(text_lines)
 
     def construct_orders_text(self, orders_data, position_data=None):
         text_lines = []
@@ -107,40 +103,12 @@ class Message:
                 symbol = position['instrument']['symbol']
                 text = f'{position_type.upper()} {quant} shares of {symbol} for an average price of {avg_price}. The current price per share is {current_pps}. This is a net change of {day_change}.'
                 text_lines.append(text)
-        self.text = self.end_line.join(text_lines)
+        self.text = '<br />'.join(text_lines)
 
-    #rewrite send_text and send_message to remove repeated code... probably rewrite this whole class into two, one to handle creating the text
-    # the other for handling formatting and sending the message
-    def send_text(self, username, password, recepients, server="smtp.gmail.com", port=587, isTls=True, html=False):
-        sentences = self.tokenize_text()
-
-        message_length = 0
-        message = ''
-
-        for sentence in sentences:
-            length = len(sentence)
-            if message_length + length > 160:
-                msg = MIMEMultipart()
-                if html:
-                    msg.attach(MIMEText(message, 'html'))
-                else:
-                    msg.attach(MIMEText(message))
-
-                smtp = smtplib.SMTP(server, port)
-                if isTls: 
-                    smtp.starttls()
-                smtp.login(username, password)
-                smtp.sendmail(username, recepients, msg.as_string())
-                message_length = 0
-                message = sentence
-            else:
-                message += f'sentence{self.end_line}'
-                message_length += 0
-
-    def send_message(self, username, password, recepients, server="smtp.gmail.com", port=587, isTls=True, html=False):
+    def send_email(self, username, password, recepient, server="smtp.gmail.com", port=587, isTls=True, html=True):
         msg = MIMEMultipart()
         msg['From'] = username
-        msg['To'] = COMMASPACE.join(recepients)
+        msg['To'] = COMMASPACE.join(recepient)
         msg['Date'] = formatdate(localtime = True)
         msg['Subject'] = self.subject
         if html:
@@ -160,5 +128,5 @@ class Message:
         if isTls: 
             smtp.starttls()
         smtp.login(username, password)
-        smtp.sendmail(username, recepients, msg.as_string())
+        smtp.sendmail(username, recepient, msg.as_string())
         smtp.quit()

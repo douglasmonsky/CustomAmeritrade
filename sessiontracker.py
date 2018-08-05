@@ -2,7 +2,7 @@ import time
 from ameritrade import Ameritrade
 from datetime import datetime
 from finviz import Finviz
-from notify import Email
+from notify import Message
 from orders import Orders
 from portfolio import TransactionProcessor
 
@@ -63,17 +63,17 @@ class SessionTracker:
 
     def notify(self, data, subject, notification_type, data2=None, include_news=True):
         '''Notify userlist that a transaction has been made.'''
-        email = Email(subject, finviz_session=self.finviz_session)
+        message = Message(subject, finviz_session=self.finviz_session, end_line='<br />')
         if notification_type == 'orders':
-            email.construct_orders_text(data, data2)
+            message.construct_orders_text(data, data2)
         elif notification_type == 'transactions':
-            email.construct_trade_text(data)
+            message.construct_trade_text(data)
         elif notification_type == 'end_day':
-             email.construct_positions_text(data, self.endtime.strftime("%H:%M"))
+             message.construct_positions_text(data, self.endtime.strftime("%H:%M"))
         elif notification_type == 'start_day':
-             email.construct_positions_text(data, self.starttime.strftime("%H:%M"), 
+             message.construct_positions_text(data, self.starttime.strftime("%H:%M"), 
                                             end_of_day=False, include_news=include_news)
-        email.send_email(self.username, self.password, self.recepients, html=True)  
+        message.send_message(self.username, self.password, self.recepients, html=True)
 
     def tick(self, tick_type='orders'):
         '''Perform actions on a preset time basis.'''
