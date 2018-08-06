@@ -1,7 +1,6 @@
 import requests
 import time
 import pickle
-import bs4
 
 
 class Account:

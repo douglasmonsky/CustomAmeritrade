@@ -3,6 +3,7 @@ import csv
 import requests
 from datetime import datetime, timedelta
 
+
 class Finviz:
 
     def __init__(self, elite=False, username=None, password=None):
@@ -73,13 +74,13 @@ class Finviz:
         return presets
 
     def pull_data(self, download=False, filename='finviz_data.csv'):
-        '''
+        """
         Downloads the data on the page via finviz's export functionality. Must be on a 
         page that has this functionality (e.g. the screener or groups_overview).
-        '''
+        """
         links = self.current_soup.find_all('a', {'class': 'tab-link'})
         for link in links:
-             if link.text == 'export':
+            if link.text == 'export':
                 download_link = link['href']
                 download_link = f'https://elite.finviz.com/{download_link}'
 
@@ -103,6 +104,7 @@ class Finviz:
                 csvfile.write(csv_text)
 
         return data
+
 
 if __name__ == "__main__":
     from privateinfo import finviz_username, finviz_password

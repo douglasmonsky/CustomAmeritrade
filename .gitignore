@@ -7,3 +7,5 @@ __pycache__/privateinfo.cpython-36.pyc
 __pycache__/portfolio.cpython-36.pyc
 *.pyc
 *.csv
+*.xml
+*.iml
