@@ -34,7 +34,7 @@ class Finviz:
             self.current_page = search_page
             self.current_soup = soup
 
-    def get_news(self, symbol, days_back=2):
+    def get_news(self, symbol, days_back=1):
         new_articles = []
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         refrence_day = today - timedelta(days=days_back)
@@ -57,6 +57,28 @@ class Finviz:
                 title = article.text
                 new_articles.append([datetime.strftime(date,'%b-%d-%y'), time, title, href])
         return new_articles
+
+    def get_analyst_ratings(self, symbol):
+        search_page = f'https://elite.finviz.com/quote.ashx?t={symbol}'
+        self.page_check(search_page)
+        table = self.current_soup.find('table', {'class': 'fullview-ratings-outer'})
+        rows = table.find_all('tr')
+
+        data = []
+        for row in rows:
+            try:
+                row_data = {}
+                cols = row.find_all('td')
+                row_data['date'] = cols[1].text
+                row_data['iteration'] = cols[2].text
+                row_data['analyst'] = cols[3].text
+                row_data['position'] = cols[4].text
+                row_data['target'] = cols[5].text
+            except IndexError:
+                continue
+            data.append(row_data)
+
+        return data
 
     def open_screener(self, link_suffix=''):
         self.page_check(f'https://finviz.com/screener.ashx?{link_suffix}')
@@ -109,7 +131,8 @@ class Finviz:
 if __name__ == "__main__":
     from privateinfo import finviz_username, finviz_password
     finviz = Finviz(True, finviz_username, finviz_password)
-    presets = finviz.open_screener()
+    # presets = finviz.open_screener()
     # finviz.open_screener(presets['New Screen'])
-    data = finviz.pull_data(True)
-    print(data[-1])
+    # data = finviz.pull_data(True)
+    # print(data[-1])
+    finviz.get_analyst_ratings('AAPL')
