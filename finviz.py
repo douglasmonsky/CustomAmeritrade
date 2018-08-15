@@ -136,3 +136,4 @@ if __name__ == "__main__":
     # data = finviz.pull_data(True)
     # print(data[-1])
     finviz.get_analyst_ratings('AAPL')
+    '''testing github on pycharm'''
