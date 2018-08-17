@@ -1,4 +1,3 @@
-
 class Order:
 
     def __init__(self, order):
@@ -6,7 +5,6 @@ class Order:
         self.session = order['session']
         self.quant = int(order['quantity'])
         self.filled = int(order['filledQuantity'])
-
         self.duration = order['duration']
         self.status = order['status']
         self.specifics = order['orderLegCollection'][0]
@@ -16,4 +14,4 @@ class Order:
         self.order = order
 
     def avg_price(self):
-        price = self.order['price']
+        pass

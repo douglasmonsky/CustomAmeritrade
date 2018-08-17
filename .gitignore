@@ -11,3 +11,4 @@ __pycache__/portfolio.cpython-36.pyc
 *.iml
 __pycache__/finviz.cpython-36.pyc
 *.pyc
+tests/sample_orders.py
