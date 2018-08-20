@@ -150,3 +150,48 @@ sample_orders = [
       }
     ]
 
+sample_orders2 = [
+  {
+    'session': 'NORMAL',
+   'duration': 'DAY',
+   'orderType': 'MARKET',
+   'complexOrderStrategyType': 'NONE',
+   'quantity': 500.0, 'filledQuantity': 500.0,
+   'remainingQuantity': 0.0,
+   'requestedDestination': 'AUTO',
+   'destinationLinkName': 'ETMM',
+   'orderLegCollection': [
+        {
+          'orderLegType': 'EQUITY',
+          'legId': 1,
+          'instrument':
+            {'assetType': 'EQUITY',
+             'cusip': '77543R102',
+             'symbol': 'ROKU'},
+             'instruction': 'SELL',
+             'positionEffect': 'CLOSING',
+             'quantity': 500.0}],
+    'orderStrategyType': 'SINGLE',
+    'orderId': 371685592,
+    'cancelable': False,
+    'editable': False,
+    'status': 'FILLED',
+    'enteredTime': '2018-08-20T15:44:17+0000',
+    'closeTime': '2018-08-20T15:44:17+0000',
+    'tag': 'WEB_GRID_SNAP', 'accountId': 425567337,
+    'orderActivityCollection': [
+        {'activityType': 'EXECUTION',
+         'executionType': 'FILL',
+         'quantity': 500.0,
+         'orderRemainingQuantity': 0.0,
+         'executionLegs': [
+           {'legId': 1,
+            'quantity': 500.0,
+            'mismarkedQuantity': 0.0,
+            'price': 56.9331,
+            'time': '2018-08-20T15:44:17+0000'}
+            ]
+         }
+      ]
+    }
+  ]

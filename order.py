@@ -11,7 +11,19 @@ class Order:
         self.symbol = self.specifics['instrument']['symbol']
         self.instruction = self.specifics['instruction']
         self.effect = self.specifics['positionEffect']
+        self.activity_collection = order['orderActivityCollection'][0]
         self.order = order
+        self.avg_price = self.calc_avg_price()
 
-    def avg_price(self):
-        pass
+    def calc_avg_price(self):
+        execution_legs = self.activity_collection['executionLegs']
+
+        total_quant = 0
+        total_price = 0
+        for leg in execution_legs:
+            leg_quant = leg['quantity']
+            leg_price = leg['price']
+            total_quant += leg_quant
+            total_price += leg_price * leg_quant
+
+        return total_price // total_quant
