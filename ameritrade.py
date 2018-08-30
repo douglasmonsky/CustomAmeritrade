@@ -30,7 +30,8 @@ class Ameritrade:
                 data = pickle.load(f)
                 self.auth_token, self.expire_time = data
         self.check_expiration()
-        self.default_headers = {'Content-Type': 'application/json;charset=UTF-8', 'Authorization': f'Bearer {self.auth_token}'}
+        self.default_headers = {'Content-Type': 'application/json;charset=UTF-8',
+                                'Authorization': f'Bearer {self.auth_token}'}
         if self.print_auth:
             print(self.auth_token)
      
@@ -40,18 +41,22 @@ class Ameritrade:
 
     def get_account_positions(self, info_type='positions'):
         self.check_expiration()
-        data = self.session.get(f"https://api.tdameritrade.com/v1/accounts/{self.account_id}?fields={info_type}", headers=self.default_headers)
+        data = self.session.get(f"https://api.tdameritrade.com/v1/accounts/{self.account_id}?fields={info_type}",
+                                headers=self.default_headers)
         return data.json()
     
     def get_live_quote(self, symbol):
         self.check_expiration()  
-        data = self.session.get(f"https://api.tdameritrade.com/v1/marketdata/{symbol}/quotes?apikey={self.client_id}", headers=self.default_headers)
+        data = self.session.get(f"https://api.tdameritrade.com/v1/marketdata/{symbol}/quotes?apikey={self.client_id}",
+                                headers=self.default_headers)
         return data.json()
 
     def get_transactions(self, start_date, end_date, data_type='ALL'):
         ''''start and end date must be in YYYY-MM-DD format'''
         self.check_expiration()
-        data = self.session.get(f"https://api.tdameritrade.com/v1/accounts/{self.account_id}/transactions?type={data_type}&startDate={start_date}&endDate={end_date}", headers=self.default_headers)
+        data = self.session.get(f"https://api.tdameritrade.com/v1/accounts/{self.account_id}/"
+                                f"transactions?type={data_type}&startDate={start_date}&endDate={end_date}",
+                                headers=self.default_headers)
         return data.json()
 
     def refresh_auth(self):
@@ -64,18 +69,10 @@ class Ameritrade:
         data = [self.auth_token, self.expire_time]
         with open(f'auth_token_{self.account_id}.pickle', 'wb') as f:
             pickle.dump(data, f)
-        self.default_headers = {'Content-Type': 'application/json;charset=UTF-8', 'Authorization': f'Bearer {self.auth_token}'}
+        self.default_headers = {'Content-Type': 'application/json;charset=UTF-8',
+                                'Authorization': f'Bearer {self.auth_token}'}
         if self.print_auth:
             print(self.auth_token)
-
-    # def get_price_history(self, symbol, period_type, frequency_type, period=None, frequency=None, end_date=None, start_date=None, extended_hours=None):
-    #     '''CURRENTLY NOT WORKING CORRECTLY, DOES NOT CONSIDER DATA'''
-    #     self.check_expiration()
-    #     data = {'periodType': period_type, 'frequencyType': frequency_type, 'period': period, 'frequency': frequency,
-    #             'endDate': end_date, 'startDate:': start_date, 'needExtendedHoursData': extended_hours}
-    #     headers = {'Content-Type': 'application/json;charset=UTF-8', 'Authorization': f'Bearer {self.auth_token}'}
-    #     price_history = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{symbol}/pricehistory?apikey={self.client_id}", headers=headers, data=data)
-    #     return price_history.json()
 
 
 if __name__ == '__main__':
@@ -83,5 +80,4 @@ if __name__ == '__main__':
     ameritrade = Ameritrade(MainAccount, client_id, print_auth=True)
     ameritrade.refresh_auth()
     ameritrade.refresh_auth()
-    print(ameritrade.get_account_positions('orders')) #['securitiesAccount']['currentBalances']['liquidationValue'])
-    # print(ameritrade.get_transactions('2018-07-01', '2018-07-29'))
+    print(ameritrade.get_account_positions('orders'))

@@ -9,7 +9,8 @@ from portfolio import TransactionProcessor
 
 class SessionTracker:
 
-    def __init__(self, account, client_id, username, password, recepients, seen_transactions=None, endtime='16:00', finviz_session=None):
+    def __init__(self, account, client_id, username, password, recepients,
+                 seen_transactions=None, endtime='16:00', finviz_session=None):
         self.account = account
         self.client_id = client_id
         self.username = username
@@ -90,15 +91,23 @@ class SessionTracker:
         if now > self.endtime:
             self.close_session()
 
-if __name__ == "__main__":
-    from privateinfo import MainAccount, SecondAccount, client_id, gmail_username, gmail_password, send_to_email, send_to_phone, finviz_username, finviz_password
-    finviz_session = Finviz(True, finviz_username, finviz_password)
-    tracking_session = SessionTracker(MainAccount, client_id, gmail_username, gmail_password, [send_to_email], finviz_session=finviz_session)
 
-    tracking_session2 = SessionTracker(SecondAccount, client_id, gmail_username, gmail_password, [send_to_email], finviz_session=finviz_session)
+if __name__ == "__main__":
+    import privateinfo
+    finviz_session = Finviz(True, privateinfo.finviz_username, privateinfo.finviz_password)
+    tracking_session = SessionTracker(privateinfo.MainAccount, privateinfo.client_id,
+                                      privateinfo.gmail_username, privateinfo.gmail_password,
+                                      [privateinfo.send_to_email, privateinfo.send_to_email2],
+                                      finviz_session=finviz_session)
+
+    tracking_session2 = SessionTracker(privateinfo.SecondAccount, privateinfo.client_id,
+                                       privateinfo.gmail_username, privateinfo.gmail_password,
+                                       [privateinfo.send_to_email, privateinfo.send_to_email2],
+                                       finviz_session=finviz_session)
+
     tracking_session.session_running = True 
     tracking_session2.session_running = True 
-    while tracking_session.session_running == True and tracking_session2.session_running == True:
+    while tracking_session.session_running and tracking_session2.session_running:
         try:
             tracking_session.tick()
             time.sleep(5)

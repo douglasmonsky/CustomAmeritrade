@@ -32,7 +32,9 @@ def tag2md(tag):
     elif tag.name == 'pre':
         return f'```\n{tag.text}\n```'
 
-req = requests.post('https://www.bizjournals.com/sanjose/news/2018/08/03/roku-signs-massive-lease-at-san-joses-coleman.html?ana=yahoo&yptr=yahoo')
+
+req = requests.post('https://www.bizjournals.com/sanjose/news/2018/08/03/'
+                    'roku-signs-massive-lease-at-san-joses-coleman.html?ana=yahoo&yptr=yahoo')
 soup = BeautifulSoup(req.text, 'html.parser')
 
 article_data = parse_article(soup)

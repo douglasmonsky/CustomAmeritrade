@@ -13,7 +13,12 @@ class Order:
         self.effect = self.specifics['positionEffect']
         self.activity_collection = order['orderActivityCollection'][0]
         self.order = order
-        self.avg_price = self.calc_avg_price()
+        try:
+            self.avg_price = order['price']
+        except KeyError:
+            self.avg_price = self.calc_avg_price()
+        else:
+            self.avg_price = 'N/A'
 
     def calc_avg_price(self):
         execution_legs = self.activity_collection['executionLegs']
@@ -26,4 +31,4 @@ class Order:
             total_quant += leg_quant
             total_price += leg_price * leg_quant
 
-        return total_price // total_quant
+        return round(total_price / total_quant, 2)
